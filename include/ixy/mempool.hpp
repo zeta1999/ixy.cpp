@@ -1,7 +1,6 @@
 #ifndef IXY_MEMPOOL_HPP
 #define IXY_MEMPOOL_HPP
 
-#include <memory>
 #include <vector>
 #include <stack>
 
@@ -13,7 +12,7 @@ class Mempool {
     friend class Packet;
 
 public:
-    static auto allocate(uint32_t num_entries, uint32_t entry_size) -> std::shared_ptr<Mempool>;
+    static auto allocate(uint32_t num_entries, uint32_t entry_size) -> Mempool *;
 
 private:
     Mempool(uint8_t *base_addr, uint32_t buf_size, uint32_t num_entries, std::vector<uint64_t> physical_addr,

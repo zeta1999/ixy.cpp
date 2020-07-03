@@ -6,7 +6,7 @@
 
 namespace ixy {
 
-auto Mempool::allocate(uint32_t num_entries, uint32_t entry_size) -> std::shared_ptr<Mempool> {
+auto Mempool::allocate(uint32_t num_entries, uint32_t entry_size) -> Mempool * {
     entry_size = entry_size ? entry_size : 2048;
     // require entries that neatly fit into the page size, this makes the memory pool much easier
     // otherwise our base_addr + index * size formula would be wrong because we can't cross a page-boundary
@@ -15,16 +15,16 @@ auto Mempool::allocate(uint32_t num_entries, uint32_t entry_size) -> std::shared
     }
 
     struct dma_memory mem = memory_allocate_dma(num_entries * entry_size, false);
-    auto pool = Mempool{static_cast<uint8_t *>(mem.virt), entry_size, num_entries, std::vector<uint64_t>(),
-                        std::stack<uint64_t>()};
+    auto pool = new Mempool{static_cast<uint8_t *>(mem.virt), entry_size, num_entries, std::vector<uint64_t>(),
+                            std::stack<uint64_t>()};
 
     for (uint32_t i = 0; i < num_entries; i++) {
         auto addr = virt_to_phys(static_cast<uint8_t *>(mem.virt) + (i * entry_size));
-        pool.physical_addr.push_back(addr);
-        pool.free_stack.push(i);
+        pool->physical_addr.push_back(addr);
+        pool->free_stack.push(i);
     }
 
-    return std::make_shared<Mempool>(std::move(pool));
+    return pool;
 }
 
 auto Mempool::alloc_buf() -> uint64_t {
